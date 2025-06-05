@@ -45,7 +45,7 @@ def getBEV(all_points): #N*3
 
     max_pixel = np.max(np.max(mat_global_image))
 
-    mat_global_image[mat_global_image<=1] = 0  
+    # mat_global_image[mat_global_image<=1] = 0  
     mat_global_image = mat_global_image*10
     
     mat_global_image[np.where(mat_global_image>255)]=255
