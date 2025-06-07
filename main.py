@@ -51,7 +51,7 @@ def get_args():
     parser.add_argument('--cachePath', type=str, default='./cache/', help='Path to save cache to.')
 
 
-    parser.add_argument('--load_from', type=str, default='runs/Aug08_10-17-29', help='Path to load checkpoint from, for resuming training or testing.')
+    parser.add_argument('--load_from', type=str, default='', help='Path to load checkpoint from, for resuming training or testing.')
     parser.add_argument('--ckpt', type=str, default='best', 
             help='Load_from from latest or best checkpoint.', choices=['latest', 'best'])
     
@@ -253,7 +253,7 @@ if __name__ == "__main__":
     model = model.cuda()
     
     # initialize netvlad with pre-trained or cluster
-    if opt.load_from:
+    if opt.load_from != '':
         if opt.ckpt.lower() == 'latest':
             resume_ckpt = join(opt.load_from,  'checkpoint.pth.tar')
         elif opt.ckpt.lower() == 'best':
