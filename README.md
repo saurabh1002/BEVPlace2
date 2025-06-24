@@ -47,6 +47,7 @@ Here are some experimental results on large-scale datasets.
 ![KITTI](imgs/samples.png) -->
 
 # News
+- 2025-06-24: BEVPlace++ is accepted by the top-tier robotics journal, IEEE Transactions on Robotics (T-RO) 🎉
 - 2024-12-30: BEVPlace++ is released. Compared to BEVPlace, it achieves complete 3DoF global localization.
 - 2023-08-31: Update the pre-trained weights and the bev dataset of KITTI to reproduce the numbers in the paper. 
 - 2023-07-14: Our paper is accepted by ICCV 2023!
@@ -55,14 +56,11 @@ Here are some experimental results on large-scale datasets.
 
 # Cite
 ```
-@misc{luo2024bevplacefastrobustlightweight,
+@ARTICLE{luo2024bevplacefastrobustlightweight,
+      journal={IEEE Transactions on Robotics (T-RO)}, 
       title={BEVPlace++: Fast, Robust, and Lightweight LiDAR Global Localization for Unmanned Ground Vehicles}, 
       author={Lun Luo and Si-Yuan Cao and Xiaorui Li and Jintao Xu and Rui Ai and Zhu Yu and Xieyuanli Chen},
-      year={2024},
-      eprint={2408.01841},
-      archivePrefix={arXiv},
-      primaryClass={cs.RO},
-      url={https://arxiv.org/abs/2408.01841}, 
+      year={2025},
 }
 ```
 ```
