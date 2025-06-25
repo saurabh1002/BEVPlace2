@@ -1,7 +1,7 @@
 # BEVPlace++: Fast, Robust, and Lightweight LiDAR Global Localization for Unmanned Ground Vehicles
 BEVPlace++ is a LiDAR-based global localization method. It projects point clouds into Bird's-eye View (BEV) images and generates global features with a rotation equivariant module and the NetVLAD. It sequentially performs place recognition and pose estimation to achieve complete global localization. Experiments show that BEVPlace++ significantly outperforms the state-of-the-art (SOTA) methods and generalizes well to previously unseen environments. BEVPlace++ will benefit various applications, including loop closure detection, global localization, and SLAM. Please feel free to use and enjoy it!
 
-> More details can be found in our pre-print paper https://arxiv.org/pdf/2408.01841.
+> More details can be found in our T-RO paper ([pdf](https://arxiv.org/pdf/2408.01841)).
 
 # Results
 
@@ -56,7 +56,7 @@ Here are some experimental results on large-scale datasets.
 
 # Cite
 ```
-@ARTICLE{luo2024bevplacefastrobustlightweight,
+@ARTICLE{luo2024bevplaceplus,
       journal={IEEE Transactions on Robotics (T-RO)}, 
       title={BEVPlace++: Fast, Robust, and Lightweight LiDAR Global Localization for Unmanned Ground Vehicles}, 
       author={Lun Luo and Si-Yuan Cao and Xiaorui Li and Jintao Xu and Rui Ai and Zhu Yu and Xieyuanli Chen},
