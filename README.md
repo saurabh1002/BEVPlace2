@@ -60,6 +60,9 @@ Here are some experimental results on large-scale datasets.
       journal={IEEE Transactions on Robotics (T-RO)}, 
       title={BEVPlace++: Fast, Robust, and Lightweight LiDAR Global Localization for Unmanned Ground Vehicles}, 
       author={Lun Luo and Si-Yuan Cao and Xiaorui Li and Jintao Xu and Rui Ai and Zhu Yu and Xieyuanli Chen},
+      volume={41},
+      number={},
+      pages={4479-4498},
       year={2025},
 }
 ```
