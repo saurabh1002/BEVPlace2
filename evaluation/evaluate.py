@@ -1,0 +1,138 @@
+import datetime
+import os
+import sys
+import torch
+import pickle
+import numpy as np
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "../"))
+from rich import box
+from rich.console import Console
+from rich.table import Table
+
+
+def create_results_dir(cfg, dataset):
+    def get_timestamp() -> str:
+        return datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+    results_dir = os.path.join(
+        cfg.results_dir, f"{dataset.sequence_id}_results", get_timestamp()
+    )
+    latest_dir = os.path.join(
+        cfg.results_dir, f"{dataset.sequence_id}_results", "latest"
+    )
+    os.makedirs(results_dir, exist_ok=True)
+    (
+        os.unlink(latest_dir)
+        if os.path.exists(latest_dir) or os.path.islink(latest_dir)
+        else None
+    )
+    os.symlink(results_dir, latest_dir)
+
+    return results_dir
+
+
+def save_pickle(data_variable, file_name):
+    dbfile2 = open(file_name, "ab")
+    pickle.dump(data_variable, dbfile2)
+    dbfile2.close()
+
+
+def scan_indices_to_map_indices(dataset_size, local_maps_scan_range):
+    start = local_maps_scan_range[:, 0][:, None]
+    end = local_maps_scan_range[:, 1][:, None]
+
+    scan_indices = np.arange(dataset_size)
+    ref_mask = (scan_indices >= start) & (scan_indices < end)
+    map_indices = np.argmax(ref_mask, axis=0).astype(np.uint16)
+    return map_indices
+
+
+class EvaluationMetrics:
+    def __init__(self, true_positives, false_positives, false_negatives):
+        self.tp = true_positives
+        self.fp = false_positives
+        self.fn = false_negatives
+
+        try:
+            self.precision = self.tp / (self.tp + self.fp)
+        except ZeroDivisionError:
+            self.precision = np.nan
+
+        try:
+            self.recall = self.tp / (self.tp + self.fn)
+        except ZeroDivisionError:
+            self.recall = np.nan
+
+        try:
+            self.F1 = 2 * self.precision * self.recall / (self.precision + self.recall)
+        except ZeroDivisionError:
+            self.F1 = np.nan
+
+
+if __name__ == "__main__":
+    from REIN import REIN
+    from config.eval_config import get_config_eval
+    from evaluation.eval_sequence import evaluate_sequence_reg
+    from datasets import dataset_factory
+
+    cfg = get_config_eval()
+
+    device = torch.device("cuda")
+
+    # Get model
+    model = REIN()
+    model = model.cuda()
+
+    print("=> loading checkpoint '{}'".format(cfg.checkpoint))
+    checkpoint = torch.load(cfg.checkpoint, weights_only=False)
+    model.load_state_dict(checkpoint["state_dict"])
+    model = model.to(device)
+    model.eval()
+
+    model = model.cuda()
+    model.eval()
+
+    dataset = dataset_factory(
+        dataloader=cfg.dataloader, data_dir=cfg.data_dir, sequence=cfg.sequence
+    )
+
+    map_indices = scan_indices_to_map_indices(
+        len(dataset), dataset.local_maps_scan_range
+    )
+
+    descriptors, candidate_closures = evaluate_sequence_reg(
+        model, dataset, map_indices, cfg
+    )
+    results_dir = create_results_dir(cfg, dataset)
+    save_pickle(descriptors, os.path.join(results_dir, "bevplace2_descriptors.pkl"))
+
+    print("[INFO] Computing Loop Closure Evaluation Metrics")
+    thresholds = np.linspace(cfg.thresh_min, cfg.thresh_max, int(cfg.num_thresholds))
+
+    metrics = []
+    gt_closures = set(map(lambda x: tuple(sorted(x)), dataset.gt_closure_indices))
+    for threshold in thresholds:
+        closures = set()
+        for target_id, (source_ids, distances) in candidate_closures.items():
+            mask = distances <= threshold
+            if np.any(mask):
+                closures.update(
+                    (source_id, target_id) for source_id in source_ids[mask]
+                )
+        tp = len(gt_closures.intersection(closures))
+        fp = len(closures) - tp
+        fn = len(gt_closures) - tp
+        metrics.append(EvaluationMetrics(tp, fp, fn))
+
+    table = Table(box=box.HORIZONTALS)
+    for threshold, metric in zip(thresholds, metrics):
+        table.add_row(
+            f"{threshold:.4f} {metric.tp} {metric.fp} {metric.fn} {metric.precision:.4f} {metric.recall:.4f} {metric.F1:.4f}"
+        )
+    console = Console()
+    console.print(table)
+
+    with open(os.path.join(results_dir, "metrics.txt"), "wt") as logfile:
+        console = Console(file=logfile, width=100, force_jupyter=False)
+        console.print(table)
